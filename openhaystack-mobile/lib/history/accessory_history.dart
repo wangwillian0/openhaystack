@@ -46,7 +46,7 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
   Widget build(BuildContext context) {
     // Filter for the locations after the specified cutoff date (now - number of days)
     var now = DateTime.now();
-    List<Pair<LatLng, DateTime>> locationHistory = widget.accessory.locationHistory
+    List<Pair<LatLng, DateTime>> locationHistory = widget.accessory.locationHistory.reversed
       .where(
         (element) => element.b.isAfter(
           now.subtract(Duration(days: numberOfDays.round())),
@@ -100,16 +100,6 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                       return const Text("© OpenStreetMap contributors");
                     },
                   ),
-                  // The line connecting the locations chronologically
-                  PolylineLayerOptions(
-                    polylines: [
-                      Polyline(
-                        points: locationHistory.map((entry) => entry.a).toList(),
-                        strokeWidth: 4,
-                        color: Theme.of(context).colorScheme.primaryVariant,
-                      ),
-                    ],
-                  ),
                   // The markers for the historic locaitons
                   MarkerLayerOptions(
                     markers: locationHistory.map((entry) => Marker(
@@ -125,8 +115,8 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                           Icons.circle,
                           size: 15,
                           color: entry == popupEntry
-                            ? Colors.red
-                            : Theme.of(context).indicatorColor,
+                            ? Colors.green
+                            : Color.lerp(Colors.red, Colors.blue, now.difference(entry.b).inSeconds / (numberOfDays * 24 * 60 * 60))
                         ),
                       ),
                     )).toList(),
