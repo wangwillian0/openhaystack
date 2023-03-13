@@ -25,15 +25,16 @@ class FindMyController {
     return compute(_getListedReportResults, keyPair);
   }
 
-  /// Fetches and decrypts the location reports for the given
-  /// [FindMyKeyPair] from apples FindMy Network.
+  /// Fetches and decrypts each location report in a separate [Isolate]
+  /// for the given [FindMyKeyPair] from apples FindMy Network.
+  /// Each report is decrypted in a separate [Isolate].
   /// Returns a list of [FindMyLocationReport].
   static Future<List<FindMyLocationReport>> _getListedReportResults(FindMyKeyPair keyPair) async{
-    List<FindMyLocationReport> results = <FindMyLocationReport>[];
     final jsonResults = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey());
-    for (var result in jsonResults) {
-      results.add(await _decryptResult(result, keyPair, keyPair.privateKeyBase64!));
-    }
+    List<FindMyLocationReport> results = await Future.wait(jsonResults.map((result) async {
+      final decryptedResult = await compute(_decryptResult, [result, keyPair, keyPair.privateKeyBase64!]);
+      return decryptedResult;
+    }));
     return results;
   }
 
@@ -62,7 +63,10 @@ class FindMyController {
 
   /// Decrypts the encrypted reports with the given [FindMyKeyPair] and private key.
   /// Returns the decrypted report as a [FindMyLocationReport].
-  static Future<FindMyLocationReport> _decryptResult(dynamic result, FindMyKeyPair keyPair, String privateKey) async {
+  static Future<FindMyLocationReport> _decryptResult(List<dynamic> args) async {
+    final result = args[0];
+    final keyPair = args[1];
+    final privateKey = args[2];
     assert (result["id"]! == keyPair.getHashedAdvertisementKey(),
       "Returned FindMyReport hashed key != requested hashed key");
 
