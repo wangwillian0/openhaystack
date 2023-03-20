@@ -24,7 +24,7 @@ class LocationModel extends ChangeNotifier {
     if (!serviceEnabled) {
       serviceEnabled = await _location.requestService();
       if (!serviceEnabled) {
-        print('Could not enable location service.');
+        debugPrint('Could not enable location service.');
         return false;
       }
     }
@@ -78,7 +78,7 @@ class LocationModel extends ChangeNotifier {
   /// the new location.
   void _updateLocation(LocationData locationData) {
     if (locationData.latitude != null && locationData.longitude != null) {
-      // print('Locaiton here: ${locationData.latitude!}, ${locationData.longitude!}');
+      // debugPrint('Locaiton here: ${locationData.latitude!}, ${locationData.longitude!}');
       here = LatLng(locationData.latitude!, locationData.longitude!);
       initialLocationSet = true;
       getAddress(here!)
@@ -87,7 +87,7 @@ class LocationModel extends ChangeNotifier {
           notifyListeners();
         });
     } else {
-      print('Received invalid location data: $locationData');
+      debugPrint('Received invalid location data: $locationData');
     }
     notifyListeners();
   }

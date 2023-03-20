@@ -56,7 +56,7 @@ class FindMyController {
   static ECPublicKey _derivePublicKey(ECPrivateKey privateKey) {
     final pk = _curveParams.G * privateKey.d;
     final publicKey = ECPublicKey(pk, _curveParams);
-    print("Isolate:${Isolate.current.hashCode}: Point Data: ${base64Encode(publicKey.Q!.getEncoded(false))}");
+    debugPrint("Point Data: ${base64Encode(publicKey.Q!.getEncoded(false))}");
 
     return publicKey;
   }
