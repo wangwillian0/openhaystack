@@ -1,3 +1,0 @@
-[submodule "Firmware/Microbit_v1/blessed"]
-	path = Firmware/Microbit_v1/blessed
-	url = https://github.com/pauloborges/blessed.git
