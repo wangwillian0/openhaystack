@@ -15,3 +15,9 @@ jobs:
     - run: flutter pub get
     - run: flutter build apk
     - run: flutter build appbundle
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: android
+        path: ./build/
