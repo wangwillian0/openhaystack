@@ -1,4 +1,4 @@
-name: iOS
+name: Android
 
 on: [push, pull_request]
 
