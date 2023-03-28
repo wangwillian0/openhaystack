@@ -11,6 +11,10 @@ buildscript {
     }
 }
 
+android {
+  compileSdkVersion 33
+}
+
 allprojects {
     repositories {
         google()
