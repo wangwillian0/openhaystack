@@ -1,0 +1,23 @@
+name: Android
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v2
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+    - uses: subosito/flutter-action@v2
+    - run: flutter pub get
+    - run: flutter build apk
+    - run: flutter build appbundle
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: android
+        path: ./build/app/outputs/flutter-apk/app-release.apk
