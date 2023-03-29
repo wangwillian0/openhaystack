@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 const introductionShownKey = 'INTRODUCTION_SHOWN';
 const locationPreferenceKnownKey = 'LOCATION_PREFERENCE_KNOWN';
 const locationAccessWantedKey = 'LOCATION_PREFERENCE_WANTED';
+const serverAddressKey = '_seemooEndpoint';
 
 class UserPreferences extends ChangeNotifier {
 
@@ -50,6 +51,11 @@ class UserPreferences extends ChangeNotifier {
     return _prefs?.getBool(locationAccessWantedKey);
   }
 
+  /// Returns the server address.
+  String? get serverAddress {
+    return _prefs?.getString(serverAddressKey);
+  }
+
   /// Updates the location access preference of the user.
   Future<bool> setLocationPreference(bool locationAccessWanted) async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -64,4 +70,9 @@ class UserPreferences extends ChangeNotifier {
     
   }
 
+  /// Updates the server preference of the user.
+  Future<bool> setServerPreference(String serverUrl) async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!.setString(serverAddressKey, serverUrl);
+  }
 }

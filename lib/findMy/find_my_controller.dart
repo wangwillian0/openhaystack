@@ -11,6 +11,8 @@ import 'package:pointycastle/src/utils.dart' as pc_utils;
 import 'package:openhaystack_mobile/findMy/decrypt_reports.dart';
 import 'package:openhaystack_mobile/findMy/models.dart';
 import 'package:openhaystack_mobile/findMy/reports_fetcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:openhaystack_mobile/preferences/user_preferences_model.dart';
 
 class FindMyController {
   static const _storage = FlutterSecureStorage();
@@ -22,15 +24,19 @@ class FindMyController {
   /// Returns a list of [FindMyLocationReport]'s.
   static Future<List<FindMyLocationReport>> computeResults(FindMyKeyPair keyPair) async{
     await _loadPrivateKey(keyPair);
-    return compute(_getListedReportResults, keyPair);
+    var prefs = await SharedPreferences.getInstance();
+    final seemooEndpoint = prefs.getString(serverAddressKey) ?? "https://add-your-proxy-server-here/getLocationReports";
+    return compute(_getListedReportResults, [keyPair, seemooEndpoint]);
   }
 
   /// Fetches and decrypts each location report in a separate [Isolate]
   /// for the given [FindMyKeyPair] from apples FindMy Network.
   /// Each report is decrypted in a separate [Isolate].
   /// Returns a list of [FindMyLocationReport].
-  static Future<List<FindMyLocationReport>> _getListedReportResults(FindMyKeyPair keyPair) async{
-    final jsonResults = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey());
+  static Future<List<FindMyLocationReport>> _getListedReportResults(List<dynamic> args) async {
+    final keyPair = args[0];
+    final seemooEndpoint = args[1];
+    final jsonResults = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey(), seemooEndpoint);
     List<FindMyLocationReport> results = await Future.wait(jsonResults.map((result) async {
       final decryptedResult = await compute(_decryptResult, [result, keyPair, keyPair.privateKeyBase64!]);
       return decryptedResult;

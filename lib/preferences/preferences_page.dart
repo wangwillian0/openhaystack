@@ -39,6 +39,15 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       }
                     },
                   ),
+                  TextField(
+                    controller: TextEditingController(text: prefs.serverAddress),
+                    decoration: const InputDecoration(
+                      labelText: 'Server Address',
+                    ),
+                    onChanged: (value) {
+                      prefs.setServerPreference(value);
+                    },
+                  ),
                   ListTile(
                     title: TextButton(
                       child: const Text('About'),
