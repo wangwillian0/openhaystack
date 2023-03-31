@@ -98,6 +98,10 @@ class DecryptReports {
   /// key and returns the raw key data.
   static Uint8List _kdf(Uint8List secret, Uint8List ephemeralKey) {
     var shaDigest = SHA256Digest();
+    if (secret.length < 28) {
+      var pad = Uint8List(28 - secret.length);
+      shaDigest.update(pad, 0, pad.length);
+    }
     shaDigest.update(secret, 0, secret.length);
 
     var counter = 1;
