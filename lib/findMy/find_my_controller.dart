@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'dart:io' as IO;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,13 +35,20 @@ class FindMyController {
   /// Each report is decrypted in a separate [Isolate].
   /// Returns a list of [FindMyLocationReport].
   static Future<List<FindMyLocationReport>> _getListedReportResults(List<dynamic> args) async {
-    final keyPair = args[0];
-    final seemooEndpoint = args[1];
+    FindMyKeyPair keyPair = args[0];
+    String seemooEndpoint = args[1];
     final jsonResults = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey(), seemooEndpoint);
-    List<FindMyLocationReport> results = await Future.wait(jsonResults.map((result) async {
-      final decryptedResult = await compute(_decryptResult, [result, keyPair, keyPair.privateKeyBase64!]);
-      return decryptedResult;
+    final numChunks = IO.Platform.numberOfProcessors;
+    final chunkSize = (jsonResults.length / numChunks).ceil();
+    final chunks = [
+      for (var i = 0; i < jsonResults.length; i += chunkSize)
+        jsonResults.sublist(i, i + chunkSize < jsonResults.length ? i + chunkSize : jsonResults.length),
+    ];
+    final decryptedChunks = await Future.wait(chunks.map((chunk) async {
+      final decryptedChunk = await compute(_decryptChunk, [chunk, keyPair, keyPair.privateKeyBase64!]);
+      return decryptedChunk;
     }));
+    final results = decryptedChunks.expand((element) => element).toList();
     return results;
   }
 
@@ -67,12 +75,19 @@ class FindMyController {
     return publicKey;
   }
 
+  static Future<List<FindMyLocationReport>> _decryptChunk(List<dynamic> args) async {
+    List<dynamic> resultChunk = args[0];
+    FindMyKeyPair keyPair = args[1];
+    String privateKey = args[2];
+    final results = await Future.wait(resultChunk.map((result) async {
+      final decrypted = await _decryptResult(result, keyPair, privateKey);
+      return decrypted;
+    }));
+    return results;
+  }
   /// Decrypts the encrypted reports with the given [FindMyKeyPair] and private key.
   /// Returns the decrypted report as a [FindMyLocationReport].
-  static Future<FindMyLocationReport> _decryptResult(List<dynamic> args) async {
-    final result = args[0];
-    final keyPair = args[1];
-    final privateKey = args[2];
+  static Future<FindMyLocationReport> _decryptResult(dynamic result, FindMyKeyPair keyPair, String privateKey) async {
     assert (result["id"]! == keyPair.getHashedAdvertisementKey(),
       "Returned FindMyReport hashed key != requested hashed key");
 
