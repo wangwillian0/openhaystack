@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# FFI
+jniLibs
+
+# Rust
+native/target
+
+# VSCode
+.vscode

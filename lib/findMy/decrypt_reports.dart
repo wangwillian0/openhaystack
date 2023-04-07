@@ -7,27 +7,46 @@ import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
 import 'package:pointycastle/src/utils.dart' as pc_utils;
 import 'package:openhaystack_mobile/findMy/models.dart';
+import 'package:openhaystack_mobile/ffi/ffi.dart'
+    if (dart.library.html) 'package:openhaystack_mobile/ffi/ffi_web.dart';
 
 class DecryptReports {
   /// Decrypts a given [FindMyReport] with the given private key.
-  static Future<List<FindMyLocationReport>> decryptReportChunk(List<FindMyReport> reportChunk, Uint8List key) async {
+  static Future<List<FindMyLocationReport>> decryptReportChunk(List<FindMyReport> reportChunk, Uint8List privateKeyBytes) async {
     final curveDomainParam = ECCurve_secp224r1();
-    final privateKey = ECPrivateKey(
-        pc_utils.decodeBigIntWithSign(1, key),
-        curveDomainParam);
 
-    final ephemeralKeyChunk = await Future.wait(reportChunk.map((report) async {
+    final ephemeralKeyChunk = reportChunk.map((report) {
       final payloadData = report.payload;
       final ephemeralKeyBytes = payloadData.sublist(5, 62);
       return ephemeralKeyBytes;
-    }));
+    }).toList();
 
-    final sharedKeyChunk = await Future.wait(ephemeralKeyChunk.map((ephemeralKey) async {
-      final decodePoint = curveDomainParam.curve.decodePoint(ephemeralKey);
-      final ephemeralPublicKey = ECPublicKey(decodePoint, curveDomainParam);
-      final sharedKey = _ecdh(ephemeralPublicKey, privateKey);
-      return sharedKey;
-    }));
+    late final List<Uint8List> sharedKeyChunk;
+
+    try {
+      debugPrint("Trying native ECDH");
+      final ephemeralKeyBlob = Uint8List.fromList(ephemeralKeyChunk.expand((element) => element).toList()); 
+      final sharedKeyBlob = await api.ecdh(publicKeyBlob: ephemeralKeyBlob, privateKey: privateKeyBytes);
+      final chunkSize = (sharedKeyBlob.length / ephemeralKeyChunk.length).ceil();
+      sharedKeyChunk = [
+        for (var i = 0; i < sharedKeyBlob.length; i += chunkSize)
+          sharedKeyBlob.sublist(i, i + chunkSize < sharedKeyBlob.length ? i + chunkSize : sharedKeyBlob.length),
+      ];
+    }
+    catch (e) {
+      debugPrint("Native ECDH failed: $e");
+      debugPrint("Falling back to pure Dart ECDH!");
+      final privateKey = ECPrivateKey(
+        pc_utils.decodeBigIntWithSign(1, privateKeyBytes),
+        curveDomainParam);
+      sharedKeyChunk = ephemeralKeyChunk.map((ephemeralKey) {
+        final decodePoint = curveDomainParam.curve.decodePoint(ephemeralKey);
+        final ephemeralPublicKey = ECPublicKey(decodePoint, curveDomainParam);
+
+        final sharedKeyBytes = _ecdh(ephemeralPublicKey, privateKey);
+        return sharedKeyBytes;
+      }).toList();
+    }
 
     final decryptedLocationChunk = reportChunk.mapIndexed((index, report) {
       final derivedKey = _kdf(sharedKeyChunk[index], ephemeralKeyChunk[index]);

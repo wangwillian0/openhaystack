@@ -82,7 +82,7 @@ class FindMyController {
     FindMyKeyPair keyPair = args[1];
     String privateKey = args[2];
 
-    final reportChunk = await Future.wait(jsonChunk.map((jsonReport) async {
+    final reportChunk = jsonChunk.map((jsonReport) {
       assert (jsonReport["id"]! == keyPair.getHashedAdvertisementKey(),
       "Returned FindMyReport hashed key != requested hashed key");
 
@@ -96,7 +96,7 @@ class FindMyController {
         jsonReport["statusCode"]);
 
       return report;
-    }));
+    }).toList();
 
     final decryptedReports = await DecryptReports.decryptReportChunk(reportChunk, base64Decode(privateKey));
 

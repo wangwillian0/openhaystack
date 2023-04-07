@@ -1,0 +1,22 @@
+[package]
+name = "native"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[dependencies]
+flutter_rust_bridge = "1.72.1"
+elliptic-curve = "0.13.3"
+p224 = { git = "https://github.com/RustCrypto/elliptic-curves"}
+getrandom = "0.2"
+
+[features]
+default = ["p224/wip-arithmetic-do-not-use", "elliptic-curve/ecdh", "getrandom/js"]
+
+[profile.release]
+opt-level = 3
+lto = true
+
+
