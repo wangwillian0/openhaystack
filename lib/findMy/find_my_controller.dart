@@ -37,18 +37,18 @@ class FindMyController {
   static Future<List<FindMyLocationReport>> _getListedReportResults(List<dynamic> args) async {
     FindMyKeyPair keyPair = args[0];
     String seemooEndpoint = args[1];
-    final jsonResults = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey(), seemooEndpoint);
-    final numChunks = IO.Platform.numberOfProcessors;
-    final chunkSize = (jsonResults.length / numChunks).ceil();
+    final jsonReports = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey(), seemooEndpoint);
+    final numChunks = kIsWeb ? 1 : IO.Platform.numberOfProcessors+1;
+    final chunkSize = (jsonReports.length / numChunks).ceil();
     final chunks = [
-      for (var i = 0; i < jsonResults.length; i += chunkSize)
-        jsonResults.sublist(i, i + chunkSize < jsonResults.length ? i + chunkSize : jsonResults.length),
+      for (var i = 0; i < jsonReports.length; i += chunkSize)
+        jsonReports.sublist(i, i + chunkSize < jsonReports.length ? i + chunkSize : jsonReports.length),
     ];
-    final decryptedChunks = await Future.wait(chunks.map((chunk) async {
-      final decryptedChunk = await compute(_decryptChunk, [chunk, keyPair, keyPair.privateKeyBase64!]);
+    final decryptedLocations = await Future.wait(chunks.map((jsonChunk) async {
+      final decryptedChunk = await compute(_decryptChunk, [jsonChunk, keyPair, keyPair.privateKeyBase64!]);
       return decryptedChunk;
     }));
-    final results = decryptedChunks.expand((element) => element).toList();
+    final results = decryptedLocations.expand((element) => element).toList();
     return results;
   }
 
@@ -75,34 +75,32 @@ class FindMyController {
     return publicKey;
   }
 
+  /// Decrypts the encrypted reports with the given list of [FindMyKeyPair] and private key.
+  /// Returns the list of decrypted reports as a list of [FindMyLocationReport].
   static Future<List<FindMyLocationReport>> _decryptChunk(List<dynamic> args) async {
-    List<dynamic> resultChunk = args[0];
+    List<dynamic> jsonChunk = args[0];
     FindMyKeyPair keyPair = args[1];
     String privateKey = args[2];
-    final results = await Future.wait(resultChunk.map((result) async {
-      final decrypted = await _decryptResult(result, keyPair, privateKey);
-      return decrypted;
-    }));
-    return results;
-  }
-  /// Decrypts the encrypted reports with the given [FindMyKeyPair] and private key.
-  /// Returns the decrypted report as a [FindMyLocationReport].
-  static Future<FindMyLocationReport> _decryptResult(dynamic result, FindMyKeyPair keyPair, String privateKey) async {
-    assert (result["id"]! == keyPair.getHashedAdvertisementKey(),
+
+    final reportChunk = await Future.wait(jsonChunk.map((jsonReport) async {
+      assert (jsonReport["id"]! == keyPair.getHashedAdvertisementKey(),
       "Returned FindMyReport hashed key != requested hashed key");
 
-    final unixTimestampInMillis =  result["datePublished"];
-    final datePublished = DateTime.fromMillisecondsSinceEpoch(unixTimestampInMillis); 
-    FindMyReport report = FindMyReport(
+      final unixTimestampInMillis =  jsonReport["datePublished"];
+      final datePublished = DateTime.fromMillisecondsSinceEpoch(unixTimestampInMillis); 
+
+      final report = FindMyReport(
         datePublished,
-        base64Decode(result["payload"]),
+        base64Decode(jsonReport["payload"]),
         keyPair.getHashedAdvertisementKey(),
-        result["statusCode"]);
+        jsonReport["statusCode"]);
 
-    FindMyLocationReport decryptedReport = await DecryptReports
-        .decryptReport(report, base64Decode(privateKey));
+      return report;
+    }));
 
-    return decryptedReport;
+    final decryptedReports = await DecryptReports.decryptReportChunk(reportChunk, base64Decode(privateKey));
+
+    return decryptedReports;
   }
 
   /// Returns the to the base64 encoded given hashed public key

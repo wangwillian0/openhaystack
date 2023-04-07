@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'package:collection/collection.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
@@ -9,31 +10,36 @@ import 'package:openhaystack_mobile/findMy/models.dart';
 
 class DecryptReports {
   /// Decrypts a given [FindMyReport] with the given private key.
-  static Future<FindMyLocationReport> decryptReport(
-      FindMyReport report, Uint8List key) async {
+  static Future<List<FindMyLocationReport>> decryptReportChunk(List<FindMyReport> reportChunk, Uint8List key) async {
     final curveDomainParam = ECCurve_secp224r1();
-
-    final payloadData = report.payload;
-    final ephemeralKeyBytes = payloadData.sublist(5, 62);
-    final encData = payloadData.sublist(62, 72);
-    final tag = payloadData.sublist(72, payloadData.length);
-
-    _decodeTimeAndConfidence(payloadData, report);
-
     final privateKey = ECPrivateKey(
         pc_utils.decodeBigIntWithSign(1, key),
         curveDomainParam);
 
-    final decodePoint = curveDomainParam.curve.decodePoint(ephemeralKeyBytes);
-    final ephemeralPublicKey = ECPublicKey(decodePoint, curveDomainParam);
+    final ephemeralKeyChunk = await Future.wait(reportChunk.map((report) async {
+      final payloadData = report.payload;
+      final ephemeralKeyBytes = payloadData.sublist(5, 62);
+      return ephemeralKeyBytes;
+    }));
 
-    final Uint8List sharedKeyBytes = _ecdh(ephemeralPublicKey, privateKey);
-    final Uint8List derivedKey = _kdf(sharedKeyBytes, ephemeralKeyBytes);
+    final sharedKeyChunk = await Future.wait(ephemeralKeyChunk.map((ephemeralKey) async {
+      final decodePoint = curveDomainParam.curve.decodePoint(ephemeralKey);
+      final ephemeralPublicKey = ECPublicKey(decodePoint, curveDomainParam);
+      final sharedKey = _ecdh(ephemeralPublicKey, privateKey);
+      return sharedKey;
+    }));
 
-    final decryptedPayload = _decryptPayload(encData, derivedKey, tag);
-    final locationReport = _decodePayload(decryptedPayload, report);
-
-    return locationReport;
+    final decryptedLocationChunk = reportChunk.mapIndexed((index, report) {
+      final derivedKey = _kdf(sharedKeyChunk[index], ephemeralKeyChunk[index]);
+      final payloadData = report.payload;
+      final encData = payloadData.sublist(62, 72);
+      final tag = payloadData.sublist(72, payloadData.length);
+      final decryptedPayload = _decryptPayload(encData, derivedKey, tag);
+      final locationReport = _decodePayload(decryptedPayload, report);
+      return locationReport;
+    }).toList();
+    
+    return decryptedLocationChunk;
   }
 
   /// Decodes the unencrypted timestamp and confidence
