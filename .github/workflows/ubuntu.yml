@@ -1,4 +1,4 @@
-name: Android
+name: Release (Android, Web)
 
 on: [push, pull_request]
 
@@ -24,3 +24,15 @@ jobs:
       with:
         name: android
         path: ./build/app/outputs/flutter-apk/app-release.apk
+    - run: rustup override set nightly
+    - run: rustup component add rust-src
+    - run: rustup target add wasm32-unknown-unknown
+    - run: cargo install wasm-pack
+    - run: wasm-pack build -t no-modules -d ./web/pkg --no-typescript --out-name native native -- -Z build-std=std,panic_abort
+    - run: flutter build web --release --dart-define=FLUTTER_WEB_CANVASKIT_URL=https://cdn.jsdelivr.net/npm/canvaskit-wasm/bin/
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: web
+        path: ./build/web
+

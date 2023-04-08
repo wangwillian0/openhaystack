@@ -48,7 +48,7 @@ app.*.map.json
 jniLibs
 
 # Rust
-native/target
+/native/target
 
 # VSCode
 .vscode
