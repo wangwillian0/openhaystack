@@ -29,7 +29,7 @@ jobs:
     - run: rustup target add wasm32-unknown-unknown
     - run: cargo install wasm-pack
     - run: wasm-pack build -t no-modules -d ./web/pkg --no-typescript --out-name native native -- -Z build-std=std,panic_abort
-    - run: flutter build web --release --dart-define=FLUTTER_WEB_CANVASKIT_URL=https://cdn.jsdelivr.net/npm/canvaskit-wasm/bin/
+    - run: flutter build web --release --web-renderer html
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
