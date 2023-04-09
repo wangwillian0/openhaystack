@@ -19,7 +19,7 @@ jobs:
     - run: cargo install cargo-ndk
     - run: flutter pub get
     - run: flutter build apk --release
-    - name: Upload Artifacts
+    - name: Upload Android Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: android
@@ -30,9 +30,16 @@ jobs:
     - run: cargo install wasm-pack
     - run: wasm-pack build -t no-modules -d ./web/pkg --no-typescript --out-name native native -- -Z build-std=std,panic_abort
     - run: flutter build web --release --web-renderer html
-    - name: Upload Artifacts
+    - name: Upload Web Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: web
         path: ./build/web
+    - name: Publish to Cloudflare Pages
+      uses: cloudflare/pages-action@1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: openhaystack
+        directory: ./build/web
 
