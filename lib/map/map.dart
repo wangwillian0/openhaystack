@@ -100,8 +100,8 @@ class _AccessoryMapState extends State<AccessoryMap> {
               InteractiveFlag.doubleTapZoom | InteractiveFlag.flingAnimation |
               InteractiveFlag.pinchMove,
           ),
-          layers: [
-            TileLayerOptions(
+          children: [
+            TileLayer(
               backgroundColor: Theme.of(context).colorScheme.surface,
               tileBuilder: (context, child, tile) {
                 var isDark = (Theme.of(context).brightness == Brightness.dark);
@@ -116,12 +116,9 @@ class _AccessoryMapState extends State<AccessoryMap> {
                 ) : child;
               },
               urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-              subdomains: ['a', 'b', 'c'],
-              attributionBuilder: (_) {
-                return const Text("© OpenStreetMap contributors");
-              },
+              subdomains: const ['a', 'b', 'c'],
             ),
-            MarkerLayerOptions(
+            MarkerLayer(
               markers: [
                 ...accessories
                   .where((accessory) => accessory.lastLocation != null)
@@ -135,7 +132,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
                 )).toList(),
               ],
             ),
-            MarkerLayerOptions(
+            MarkerLayer(
               markers: [
                 if (locationModel.here != null) Marker(
                   width: 25.0,
@@ -163,6 +160,14 @@ class _AccessoryMapState extends State<AccessoryMap> {
                 ),
               ]
             ),
+          ],
+          nonRotatedChildren: [
+            AttributionWidget(
+              alignment: Alignment.bottomRight,
+              attributionBuilder: (BuildContext context) {
+                return const Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey));
+              },
+            )
           ],
         );
       }

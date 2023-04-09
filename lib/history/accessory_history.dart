@@ -32,14 +32,13 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
   @override
   void initState() {
     super.initState();
+  }
 
-    _mapController.onReady
-      .then((_) {
-        var historicLocations = widget.accessory.locationHistory
-          .map((entry) => entry.a).toList();
-        var bounds = LatLngBounds.fromPoints(historicLocations);
-        _mapController.fitBounds(bounds);
-      });
+  void _onMapReady() {
+    var historicLocations = widget.accessory.locationHistory
+      .map((entry) => entry.a).toList();
+    var bounds = LatLngBounds.fromPoints(historicLocations);
+    _mapController.fitBounds(bounds);
   }
 
   @override
@@ -66,6 +65,7 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
               child: FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
+                  onMapReady: _onMapReady,
                   center: LatLng(49.874739, 8.656280),
                   zoom: 13.0,
                   interactiveFlags:
@@ -79,8 +79,8 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                     });
                   },
                 ),
-                layers: [
-                  TileLayerOptions(
+                children: [
+                  TileLayer(
                     backgroundColor: Theme.of(context).colorScheme.surface,
                     tileBuilder: (context, child, tile) {
                       var isDark = (Theme.of(context).brightness == Brightness.dark);
@@ -96,12 +96,9 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                     },
                     urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                     subdomains: ['a', 'b', 'c'],
-                    attributionBuilder: (_) {
-                      return const Text("© OpenStreetMap contributors");
-                    },
                   ),
                   // The markers for the historic locaitons
-                  MarkerLayerOptions(
+                  MarkerLayer(
                     markers: locationHistory.map((entry) => Marker(
                       point: entry.a,
                       builder: (ctx) => GestureDetector(
@@ -122,7 +119,7 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                     )).toList(),
                   ),
                   // Displays the tooltip if active
-                  MarkerLayerOptions(
+                  MarkerLayer(
                     markers: [
                       if (showPopup) LocationPopup(
                         location: popupEntry!.a,
@@ -130,6 +127,15 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                       ),
                     ],
                   ),
+                ],
+                nonRotatedChildren: [
+                  AttributionWidget(
+                    alignment: Alignment.bottomRight,
+                    attributionBuilder: (BuildContext context) {
+                      // change the default white to something grey that will bemore discrete
+                      return const Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey));
+                    },
+                  )
                 ],
               ),
             ),
