@@ -246,9 +246,9 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.13.3"
+version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22cdacd4d6ed3f9b98680b679c0e52a823b8a2c7a97358d508fe247f2180c282"
+checksum = "75c71eaa367f2e5d556414a8eea812bc62985c879748d6403edabd9cb03f16e7"
 dependencies = [
  "base16ct",
  "crypto-bigint",
@@ -445,7 +445,6 @@ dependencies = [
 name = "native"
 version = "0.1.0"
 dependencies = [
- "elliptic-curve",
  "flutter_rust_bridge",
  "getrandom",
  "p224",
@@ -488,8 +487,9 @@ checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
 
 [[package]]
 name = "p224"
-version = "0.13.0"
-source = "git+https://github.com/RustCrypto/elliptic-curves#8958c2f535cc973a7cf216bcbad1f797ae6f9cdd"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4218ee67d118cf7ce98ffff01a13c6712e729c969d300906558e11a884796878"
 dependencies = [
  "elliptic-curve",
  "primeorder",
@@ -539,8 +539,9 @@ dependencies = [
 
 [[package]]
 name = "primeorder"
-version = "0.13.0"
-source = "git+https://github.com/RustCrypto/elliptic-curves#8958c2f535cc973a7cf216bcbad1f797ae6f9cdd"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf8d3875361e28f7753baefef104386e7aa47642c93023356d97fdef4003bfb5"
 dependencies = [
  "elliptic-curve",
 ]

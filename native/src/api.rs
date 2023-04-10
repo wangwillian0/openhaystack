@@ -1,5 +1,4 @@
-use elliptic_curve::{self, ecdh::diffie_hellman};
-use p224::{NistP224, SecretKey};
+use p224::{SecretKey, PublicKey, ecdh::diffie_hellman};
 
 const PRIVATE_LEN : usize = 28;
 const PUBLIC_LEN : usize = 57;
@@ -15,7 +14,7 @@ pub fn ecdh(public_key_blob : Vec<u8>, private_key : Vec<u8>) -> Vec<u8> {
     let mut j = 0; 
 
     for _i in 0..num_keys {
-        let public_key = elliptic_curve::PublicKey::<NistP224>::from_sec1_bytes(&public_key_blob[i..i+PUBLIC_LEN]).unwrap();
+        let public_key = PublicKey::from_sec1_bytes(&public_key_blob[i..i+PUBLIC_LEN]).unwrap();
         let public_affine = public_key.as_affine();
         
         let shared_secret = diffie_hellman(secret_scalar, public_affine);  
