@@ -108,7 +108,7 @@ class _AppLayoutState extends State<AppLayout> {
     if (screenSize.width < 800) {
       return const DashboardMobile();
     } else {
-      return const DashboardDesktop();
+      return const DashboardMobile();	    
     }
   }
 }
