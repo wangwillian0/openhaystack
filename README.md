@@ -1,6 +1,11 @@
 # OpenHaystack Mobile
 Porting OpenHaystack to Mobile
 
+# Main improvements over the original project
+- Performance improvements (<5s on a smartphone and <10s on web)
+- Server endpoint as user preference (no need to recompile)
+- Better history visualization
+
 # About OpenHaystack
 OpenHaystack is a project that allows location tracking of Bluetooth Low Energy (BLE) devices over Apples Find My Network.
 
