@@ -101,6 +101,12 @@ class _AccessoryMapState extends State<AccessoryMap> {
               InteractiveFlag.doubleTapZoom | InteractiveFlag.flingAnimation |
               InteractiveFlag.pinchMove,
           ),
+          nonRotatedChildren: const [
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey)),
+            )
+          ],
           children: [
             TileLayer(
               backgroundColor: Theme.of(context).colorScheme.surface,
@@ -161,14 +167,6 @@ class _AccessoryMapState extends State<AccessoryMap> {
                 ),
               ]
             ),
-          ],
-          nonRotatedChildren: [
-            AttributionWidget(
-              alignment: Alignment.bottomRight,
-              attributionBuilder: (BuildContext context) {
-                return const Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey));
-              },
-            )
           ],
         );
       }

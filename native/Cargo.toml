@@ -7,9 +7,9 @@ edition = "2021"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
-flutter_rust_bridge = "1.72.1"
-p224 = "^0.13.1"
-getrandom = "0.2"
+flutter_rust_bridge = "^1.75.2"
+p224 = "^0.13.2"
+getrandom = "^0.2"
 
 [features]
 default = ["p224/ecdh", "getrandom/js"]

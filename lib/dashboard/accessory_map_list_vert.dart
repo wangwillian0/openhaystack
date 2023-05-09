@@ -26,7 +26,7 @@ class _AccessoryMapListVerticalState extends State<AccessoryMapListVertical> {
 
   void _centerPoint(LatLng point) {
     _mapController.fitBounds(
-      LatLngBounds(point),
+      LatLngBounds(point, point),
     );
   }
   

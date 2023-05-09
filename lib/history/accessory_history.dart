@@ -80,6 +80,12 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                     });
                   },
                 ),
+                nonRotatedChildren: const [
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey)),
+                  )
+                ],
                 children: [
                   TileLayer(
                     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -128,15 +134,6 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                       ),
                     ],
                   ),
-                ],
-                nonRotatedChildren: [
-                  AttributionWidget(
-                    alignment: Alignment.bottomRight,
-                    attributionBuilder: (BuildContext context) {
-                      // change the default white to something grey that will bemore discrete
-                      return const Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey));
-                    },
-                  )
                 ],
               ),
             ),
