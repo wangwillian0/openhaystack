@@ -95,6 +95,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
           options: MapOptions(
             center: locationModel.here ?? LatLng(49.874739, 8.656280),
             zoom: 13.0,
+            maxZoom: 18.0,
             interactiveFlags:
               InteractiveFlag.pinchZoom | InteractiveFlag.drag |
               InteractiveFlag.doubleTapZoom | InteractiveFlag.flingAnimation |

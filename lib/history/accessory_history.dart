@@ -68,6 +68,7 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                   onMapReady: _onMapReady,
                   center: LatLng(49.874739, 8.656280),
                   zoom: 13.0,
+                  maxZoom: 18.0,
                   interactiveFlags:
                     InteractiveFlag.pinchZoom | InteractiveFlag.drag |
                     InteractiveFlag.doubleTapZoom | InteractiveFlag.flingAnimation |
