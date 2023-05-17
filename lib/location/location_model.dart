@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart' as geocode;
 import 'package:latlong2/latlong.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationModel extends ChangeNotifier {
   LatLng? here;
   geocode.Placemark? herePlace;
-  StreamSubscription<LocationData>? locationStream;
-  final Location _location = Location();
+  StreamSubscription<Position>? locationStream;
   bool initialLocationSet = false;
 
   /// Requests access to the device location from the user.
@@ -20,32 +19,23 @@ class LocationModel extends ChangeNotifier {
   /// Returns if location access was granted.
   Future<bool> requestLocationAccess() async {
     // Enable location service
-    var serviceEnabled = await _location.serviceEnabled();
+    var serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) {
-        debugPrint('Could not enable location service.');
+      debugPrint('Location services are disabled.');
+      return false;
+    }
+
+    // Request location access from user if not permanently denied or already granted
+    var permissionGranted = await Geolocator.checkPermission();
+    if (permissionGranted == LocationPermission.denied) {
+      permissionGranted = await Geolocator.requestPermission();
+      if (permissionGranted == LocationPermission.denied) {
+        debugPrint('Location access is denied.');
         return false;
       }
     }
 
-    // Request location access from user if not permanently denied or already granted
-    var permissionGranted = await _location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await _location.requestPermission();
-      
-    }
-
-    if (permissionGranted == PermissionStatus.granted) {
-      // Permission not granted
-      return true;
-    } else if (permissionGranted == PermissionStatus.grantedLimited) {
-      // Permission granted to access approximate location
-      return false;
-    } else {
-      // Permission not granted
-      return false;
-    }
+    return true;
   }
 
   /// Requests location updates from the platform.
@@ -55,11 +45,16 @@ class LocationModel extends ChangeNotifier {
     var permissionGranted = await requestLocationAccess();
     if (permissionGranted) {
 
+      const LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 100,
+      );
+
       // Handle future location updates
-      locationStream ??= _location.onLocationChanged.listen(_updateLocation);
+      locationStream ??= Geolocator.getPositionStream(locationSettings: locationSettings).listen(_updateLocation);
 
       // Fetch the current location
-      var locationData = await _location.getLocation();
+      var locationData = await Geolocator.getCurrentPosition();
       _updateLocation(locationData);
     } else {
       initialLocationSet = true;
@@ -76,10 +71,10 @@ class LocationModel extends ChangeNotifier {
   /// 
   /// Additionally updates the current address information to match
   /// the new location.
-  void _updateLocation(LocationData locationData) {
-    if (locationData.latitude != null && locationData.longitude != null) {
+  void _updateLocation(Position? locationData) {
+    if (locationData != null) {
       // debugPrint('Locaiton here: ${locationData.latitude!}, ${locationData.longitude!}');
-      here = LatLng(locationData.latitude!, locationData.longitude!);
+      here = LatLng(locationData.latitude, locationData.longitude);
       initialLocationSet = true;
       getAddress(here!)
         .then((value) {
