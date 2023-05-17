@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:openhaystack_mobile/dashboard/dashboard_desktop.dart';
 import 'package:openhaystack_mobile/dashboard/dashboard_mobile.dart';
 import 'package:openhaystack_mobile/accessory/accessory_registry.dart';
@@ -53,30 +52,8 @@ class _AppLayoutState extends State<AppLayout> {
   initState() {
     super.initState();
 
-    _intentDataStreamSubscription = ReceiveSharingIntent.getMediaStream()
-      .listen(handleFileSharingIntent, onError: print);
-    ReceiveSharingIntent.getInitialMedia()
-      .then(handleFileSharingIntent);
-
     var accessoryRegistry = Provider.of<AccessoryRegistry>(context, listen: false);
     accessoryRegistry.loadAccessories();
-  }
-
-   Future<void>  handleFileSharingIntent(List<SharedMediaFile> files) async {
-    // Received a sharing intent with a number of files.
-    // Import the accessories for each device in sequence.
-    // If no files are shared do nothing
-    for (var file in files) {
-      if (file.type == SharedMediaType.FILE) {
-        // On iOS the file:// prefix has to be stripped to access the file path
-        String path = Platform.isIOS
-          ? Uri.decodeComponent(file.path.replaceFirst('file://', ''))
-          : file.path;
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) => ItemFileImport(filePath: path),
-        ));
-      }
-    }
   }
 
   @override
