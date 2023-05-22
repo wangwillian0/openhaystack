@@ -61,15 +61,15 @@ class AccessoryRegistry extends ChangeNotifier {
       Accessory(hashedPublicKey: 'TrnHrAM0ZrFSDeq1NN7ppmh0zYJotYiO09alVVF1mPI=',
         id: '-5952179461995674635', name: 'Raspberry Pi', color: Colors.green,
         datePublished: DateTime.fromMillisecondsSinceEpoch(1636390931651),
-        icon: 'gift.fill', lastLocation: LatLng(49.874739, 8.656280)),
+        icon: 'gift.fill', lastLocation: LatLng(-23.559389, -46.731839)),
       Accessory(hashedPublicKey: 'TrnHrAM0ZrFSDeq1NN7ppmh0zYJotYiO09alVVF1mPI=',
         id: '-5952179461995674635', name: 'My Bag', color: Colors.blue,
         datePublished: DateTime.fromMillisecondsSinceEpoch(1636390931651),
-        icon: 'case.fill', lastLocation: LatLng(49.874739, 8.656280)),
+        icon: 'case.fill', lastLocation: LatLng(-23.559389, -46.731839)),
       Accessory(hashedPublicKey: 'TrnHrAM0ZrFSDeq1NN7ppmh0zYJotYiO09alVVF1mPI=',
         id: '-5952179461995674635', name: 'Car', color: Colors.red,
         datePublished: DateTime.fromMillisecondsSinceEpoch(1636390931651),
-        icon: 'car.fill', lastLocation: LatLng(49.874739, 8.656280)),
+        icon: 'car.fill', lastLocation: LatLng(-23.559389, -46.731839)),
     ];
     _accessories = demoAccessories;
 

@@ -93,13 +93,10 @@ class _AccessoryMapState extends State<AccessoryMap> {
         return FlutterMap(
           mapController: _mapController,
           options: MapOptions(
-            center: locationModel.here ?? LatLng(49.874739, 8.656280),
+            center: locationModel.here ?? LatLng(-23.559389, -46.731839),
             zoom: 13.0,
             maxZoom: 18.0,
-            interactiveFlags:
-              InteractiveFlag.pinchZoom | InteractiveFlag.drag |
-              InteractiveFlag.doubleTapZoom | InteractiveFlag.flingAnimation |
-              InteractiveFlag.pinchMove,
+            interactiveFlags: InteractiveFlag.all,
           ),
           nonRotatedChildren: const [
             Align(

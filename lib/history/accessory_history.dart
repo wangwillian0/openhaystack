@@ -66,13 +66,10 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                 mapController: _mapController,
                 options: MapOptions(
                   onMapReady: _onMapReady,
-                  center: LatLng(49.874739, 8.656280),
+                  center: LatLng(-23.559389, -46.731839),
                   zoom: 13.0,
                   maxZoom: 18.0,
-                  interactiveFlags:
-                    InteractiveFlag.pinchZoom | InteractiveFlag.drag |
-                    InteractiveFlag.doubleTapZoom | InteractiveFlag.flingAnimation |
-                    InteractiveFlag.pinchMove,
+                  interactiveFlags:InteractiveFlag.all,
                   onTap: (_, __) {
                     setState(() {
                       showPopup = false;
