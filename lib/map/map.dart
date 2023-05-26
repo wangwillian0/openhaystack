@@ -132,7 +132,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
         }
 
         return MapboxMap(
-          accessToken: const String.fromEnvironment("SDK_REGISTRY_TOKEN"),
+          accessToken: const String.fromEnvironment("MAP_SDK_PUBLIC_KEY"),
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onStyleLoaded,
           initialCameraPosition: CameraPosition(

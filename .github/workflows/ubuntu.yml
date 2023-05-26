@@ -20,9 +20,12 @@ jobs:
         rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
         cargo install cargo-ndk
     - name: Build for Android
+      env:
+        SDK_REGISTRY_TOKEN: ${{ secrets.MAP_SDK_SECRET_KEY }}
+        MAP_SDK_PUBLIC_KEY: ${{ secrets.MAP_SDK_PUBLIC_KEY }}
       run: |
         flutter pub get
-        flutter build apk --release
+        flutter build apk --release --dart-define=MAP_SDK_PUBLIC_KEY="$MAP_SDK_PUBLIC_KEY"
     - name: Upload Android Artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -35,11 +38,14 @@ jobs:
         rustup target add wasm32-unknown-unknown
         cargo install wasm-pack
     - name: Build for Web
+      env:
+        RUSTUP_TOOLCHAIN: nightly
+        RUSTFLAGS: -C target-feature=+atomics,+bulk-memory,+mutable-globals
+        SDK_REGISTRY_TOKEN: ${{ secrets.MAP_SDK_SECRET_KEY }}
+        MAP_SDK_PUBLIC_KEY: ${{ secrets.MAP_SDK_PUBLIC_KEY }}
       run: |
-        export RUSTUP_TOOLCHAIN=nightly
-        export RUSTFLAGS="-C target-feature=+atomics,+bulk-memory,+mutable-globals"
         wasm-pack build -t no-modules -d ./../web/pkg --no-typescript --out-name native native -- -Z build-std=std,panic_abort
-        flutter build web --release --web-renderer html
+        flutter build web --release --web-renderer html --dart-define=MAP_SDK_PUBLIC_KEY="$MAP_SDK_PUBLIC_KEY"
     - name: Upload Web Artifacts
       uses: actions/upload-artifact@v3
       with:
