@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:openhaystack_mobile/accessory/accessory_model.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:openhaystack_mobile/findMy/find_my_controller.dart';
 import 'package:openhaystack_mobile/findMy/models.dart';
 

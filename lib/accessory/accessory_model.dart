@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:openhaystack_mobile/accessory/accessory_icon_model.dart';
 import 'package:openhaystack_mobile/findMy/find_my_controller.dart';
 import 'package:openhaystack_mobile/location/location_model.dart';

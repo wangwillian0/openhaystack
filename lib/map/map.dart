@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:provider/provider.dart';
 import 'package:openhaystack_mobile/accessory/accessory_icon.dart';
 import 'package:openhaystack_mobile/accessory/accessory_model.dart';
@@ -8,12 +7,12 @@ import 'package:openhaystack_mobile/accessory/accessory_registry.dart';
 import 'package:openhaystack_mobile/location/location_model.dart';
 
 class AccessoryMap extends StatefulWidget {
-  final MapController? mapController;
+  final Function(MapboxMapController)? onMapCreatedCallback;
 
   /// Displays a map with all accessories at their latest position.
   const AccessoryMap({
     Key? key,
-    this.mapController,
+    this.onMapCreatedCallback,
   }): super(key: key);
 
   @override
@@ -21,7 +20,7 @@ class AccessoryMap extends StatefulWidget {
 }
 
 class _AccessoryMapState extends State<AccessoryMap> {
-  late MapController _mapController;
+  MapboxMapController? _mapController;
   void Function()? cancelLocationUpdates;
   void Function()? cancelAccessoryUpdates;
   bool accessoryInitialized = false;
@@ -29,24 +28,6 @@ class _AccessoryMapState extends State<AccessoryMap> {
   @override
   void initState() {
     super.initState();
-    _mapController = widget.mapController ?? MapController();
-
-    var accessoryRegistry = Provider.of<AccessoryRegistry>(context, listen: false);
-    var locationModel = Provider.of<LocationModel>(context, listen: false);
-
-    // Resize map to fit all accessories at initial locaiton
-    fitToContent(accessoryRegistry.accessories, locationModel.here);
-
-    // Fit map if first location is known
-    void  listener () {
-      // Only use the first location, cancel further updates
-      cancelLocationUpdates?.call();
-      fitToContent(accessoryRegistry.accessories, locationModel.here);
-    }
-    locationModel.addListener(listener);
-    cancelLocationUpdates = () => locationModel.removeListener(listener);
-
-    // Fit map if accessories change?
   }
 
   @override
@@ -61,21 +42,28 @@ class _AccessoryMapState extends State<AccessoryMap> {
     // Delay to prevent race conditions
     await Future.delayed(const Duration(milliseconds: 500));
 
-    List<LatLng> points = [];
-    if (hereLocation != null) {
-      _mapController.move(hereLocation, _mapController.zoom);
-      points = [hereLocation];
-    }
-
-    List<LatLng> accessoryPoints = accessories
-      .where((accessory) => accessory.lastLocation != null)
-      .map((accessory) => accessory.lastLocation!)
-      .toList();
-    _mapController.fitBounds(
-      LatLngBounds.fromPoints([...points, ...accessoryPoints]),
-      options: const FitBoundsOptions(
-        padding: EdgeInsets.all(25),
-      ));
+    List<LatLng> points = [
+      ...accessories
+          .where((accessory) => accessory.lastLocation != null)
+          .map((accessory) => accessory.lastLocation!),
+      if (hereLocation != null) hereLocation,
+    ].toList();
+    
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(
+            points.map((point) => point.latitude).reduce((value, element) => value < element ? value : element)   - 0.003,
+            points.map((point) => point.longitude).reduce((value, element) => value < element ? value : element)  - 0.003,
+          ),
+          northeast: LatLng(
+            points.map((point) => point.latitude).reduce((value, element) => value > element ? value : element)   + 0.003,
+            points.map((point) => point.longitude).reduce((value, element) => value > element ? value : element)  + 0.003,
+          ),
+        ),
+        left: 25, top: 25, right: 25, bottom: 25,
+      ),
+    );
   }
 
   @override
@@ -89,81 +77,72 @@ class _AccessoryMapState extends State<AccessoryMap> {
 
           accessoryInitialized = true;
         }
+        
+        onMapCreated(MapboxMapController controller) {
+          _mapController = controller;
+          widget.onMapCreatedCallback!(controller);
+          if (!accessoryInitialized) {
+            fitToContent(accessoryRegistry.accessories, locationModel.here);
+          }
+        }
+        
+        onStyleLoaded() {
+          // void  locationModelListener () {
+          //   locationModel.removeListener(locationModelListener);
+          //   _mapController!.addCircle(
+          //     CircleOptions(
+          //       geometry: locationModel.here!,
+          //       circleRadius: 8,
+          //       circleColor: "#007AFF",
+          //       circleStrokeColor: "#FFFFFF",
+          //       circleStrokeWidth: 2,
+          //     ),
+          //   );
+          // }
+          // locationModel.addListener(locationModelListener);
 
-        return FlutterMap(
-          mapController: _mapController,
-          options: MapOptions(
-            center: locationModel.here ?? LatLng(-23.559389, -46.731839),
+          _mapController!.addCircles(
+            accessories
+              .where((accessory) => accessory.lastLocation != null)
+              .map((accessory) => CircleOptions(
+                geometry: accessory.lastLocation!,
+                circleRadius: 12,
+                circleColor: "#FFFFFF",
+                circleStrokeColor: accessory.color.toHexStringRGB(),
+                circleStrokeWidth: 3,
+              ))
+              .toList(),
+          );
+          _mapController!.addSymbols(
+            accessories
+              .where((accessory) => accessory.lastLocation != null)
+              .map((accessory) => SymbolOptions(
+                geometry: accessory.lastLocation!,
+                // iconImage: accessory.icon.toString(),
+                iconImage: "rocket-15",
+                iconSize: 1.2,
+                textField: accessory.name,
+                textColor: "#000000",
+                textOffset: const Offset(0, 1.5),
+                iconColor: accessory.color.toHexStringRGB(),
+              ))
+              .toList(),
+          );
+          
+        }
+
+        return MapboxMap(
+          accessToken: const String.fromEnvironment("SDK_REGISTRY_TOKEN"),
+          onMapCreated: onMapCreated,
+          onStyleLoadedCallback: onStyleLoaded,
+          initialCameraPosition: CameraPosition(
+            target: locationModel.here ?? const LatLng(-23.559389, -46.731839),
             zoom: 13.0,
-            maxZoom: 18.0,
-            interactiveFlags: InteractiveFlag.all,
           ),
-          nonRotatedChildren: const [
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey)),
-            )
-          ],
-          children: [
-            TileLayer(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              tileBuilder: (context, child, tile) {
-                var isDark = (Theme.of(context).brightness == Brightness.dark);
-                return isDark ? ColorFiltered(
-                  colorFilter: const ColorFilter.matrix([
-                    -1, 0, 0, 0, 255,
-                    0, -1, 0, 0, 255,
-                    0, 0, -1, 0, 255,
-                    0, 0, 0, 1, 0,
-                  ]),
-                  child: child,
-                ) : child;
-              },
-              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-              subdomains: const ['a', 'b', 'c'],
-            ),
-            MarkerLayer(
-              markers: [
-                ...accessories
-                  .where((accessory) => accessory.lastLocation != null)
-                  .map((accessory) => Marker(
-                    rotate: true,
-                    width: 50,
-                    height: 50,
-                    point: accessory.lastLocation!,
-                    builder: (ctx) => 
-                      AccessoryIcon(icon: accessory.icon, color: accessory.color),
-                )).toList(),
-              ],
-            ),
-            MarkerLayer(
-              markers: [
-                if (locationModel.here != null) Marker(
-                  width: 25.0,
-                  height: 25.0,
-                  point: locationModel.here!,
-                  builder: (ctx) => Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).indicatorColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ]
-            ),
+          // styleString: Theme.of(context).brightness == Brightness.dark ? MapboxStyles.DARK : MapboxStyles.LIGHT,
+          annotationOrder: const [
+            AnnotationType.circle,
+            AnnotationType.symbol
           ],
         );
       }

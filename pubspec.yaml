@@ -46,7 +46,11 @@ dependencies:
   provider: ^6.0.1
 
   # Location
-  flutter_map: ^4.0.0
+  mapbox_gl:
+    git:
+      url: https://github.com/flutter-mapbox-gl/maps.git
+      ref: master
+  intl: ^0.18.1
   geolocator: ^9.0.2
   geocoding: ^2.0.1
 

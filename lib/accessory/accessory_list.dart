@@ -5,7 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:provider/provider.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:openhaystack_mobile/accessory/accessory_list_item.dart';
 import 'package:openhaystack_mobile/accessory/accessory_list_item_placeholder.dart';
 import 'package:openhaystack_mobile/accessory/accessory_registry.dart';
@@ -74,9 +75,11 @@ class _AccessoryListState extends State<AccessoryList> {
                   // Calculate distance from users devices location
                   Widget? trailing;
                   if (locationModel.here != null && accessory.lastLocation != null) {
-                    const Distance distance = Distance();
-                    final double km = distance.as(LengthUnit.Kilometer, locationModel.here!, accessory.lastLocation!);
-                    trailing = Text(km.toString() + 'km');
+                    final double km = GeolocatorPlatform.instance.distanceBetween(
+                      locationModel.here!.latitude, locationModel.here!.longitude,
+                      accessory.lastLocation!.latitude, accessory.lastLocation!.longitude
+                    ) / 1000;
+                    trailing = Text('${km.toStringAsFixed(3)} km');
                   }
                   // Get human readable location
                   return Slidable(

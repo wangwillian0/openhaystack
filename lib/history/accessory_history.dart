@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/plugin_api.dart';
 import 'package:openhaystack_mobile/accessory/accessory_model.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:openhaystack_mobile/history/days_selection_slider.dart';
-import 'package:openhaystack_mobile/history/location_popup.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 class AccessoryHistory extends StatefulWidget {
-  Accessory accessory;
+  final Accessory accessory;
 
   /// Shows previous locations of a specific [accessory] on a map.
   /// The locations are connected by a chronological line.
   /// The number of days to go back can be adjusted with a slider.
-  AccessoryHistory({
+  const AccessoryHistory({
     Key? key,
     required this.accessory,
   }) : super(key: key);
@@ -21,11 +19,7 @@ class AccessoryHistory extends StatefulWidget {
 }
 
 class _AccessoryHistoryState extends State<AccessoryHistory> {
-
-  final MapController _mapController = MapController();
-
-  bool showPopup = false;
-  Pair<LatLng, DateTime>? popupEntry;
+  MapboxMapController? _mapController;
 
   double numberOfDays = 7;
 
@@ -34,24 +28,73 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
     super.initState();
   }
 
-  void _onMapReady() {
-    var historicLocations = widget.accessory.locationHistory
-      .map((entry) => entry.a).toList();
-    var bounds = LatLngBounds.fromPoints(historicLocations);
-    _mapController.fitBounds(bounds);
+  void _onMapCreated(MapboxMapController controller) {
+    _mapController = controller;
+  }
+
+  void _updateMarkers() {
+    _mapController?.removeCircles(_mapController?.circles ?? []);
+    
+    var now = DateTime.now();
+
+    var options = widget.accessory.locationHistory
+      .where ((entry) => entry.b.isAfter(now.subtract(Duration(days: numberOfDays.round()))))
+      .map((entry) => CircleOptions(
+        geometry: entry.a,
+        circleRadius: 6,
+        circleColor: Color.lerp(
+          Colors.red, Colors.blue,
+          now.difference(entry.b).inSeconds / (numberOfDays * 24 * 60 * 60)
+        )!.toHexStringRGB(),
+    )).toList();
+
+    var data = widget.accessory.locationHistory
+      .where ((entry) => entry.b.isAfter(now.subtract(Duration(days: numberOfDays.round()))))
+      .map((entry) => {
+        'time': entry.b,
+    }).toList();
+    
+    _mapController?.addCircles(options, data);
+  }
+
+  void _onStyleLoaded() {    
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(
+            widget.accessory.locationHistory.map((entry) => entry.a.latitude).reduce((value, element) => value < element ? value : element),
+            widget.accessory.locationHistory.map((entry) => entry.a.longitude).reduce((value, element) => value < element ? value : element),
+          ),
+          northeast: LatLng(
+            widget.accessory.locationHistory.map((entry) => entry.a.latitude).reduce((value, element) => value > element ? value : element),
+            widget.accessory.locationHistory.map((entry) => entry.a.longitude).reduce((value, element) => value > element ? value : element),
+          ),
+        ),
+        left: 25, top: 25, right: 25, bottom: 25,
+      ),
+    );
+    
+    _mapController!.onCircleTapped.add(_onCircleTapped);
+
+    _updateMarkers();
+  }
+
+  void _onCircleTapped(Circle circle) {
+    final snackBar = SnackBar(
+        content: Text(
+          '${circle.data!['time'].toLocal().toString().substring(0, 19)}\n'
+          'Lat: ${circle.options.geometry!.latitude}\n'
+          'Lng: ${circle.options.geometry!.longitude}',
+          style: const TextStyle(color: Colors.white),
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Theme.of(context).primaryColor);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Filter for the locations after the specified cutoff date (now - number of days)
-    var now = DateTime.now();
-    List<Pair<LatLng, DateTime>> locationHistory = widget.accessory.locationHistory.reversed
-      .where(
-        (element) => element.b.isAfter(
-          now.subtract(Duration(days: numberOfDays.round())),
-        ),
-      ).toList();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.accessory.name),
@@ -62,76 +105,15 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
             Flexible(
               flex: 3,
               fit: FlexFit.tight,
-              child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  onMapReady: _onMapReady,
-                  center: LatLng(-23.559389, -46.731839),
+              child: MapboxMap(
+                accessToken: const String.fromEnvironment("SDK_REGISTRY_TOKEN"),
+                onMapCreated: _onMapCreated,
+                onStyleLoadedCallback: _onStyleLoaded,
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(-23.559389, -46.731839),
                   zoom: 13.0,
-                  maxZoom: 18.0,
-                  interactiveFlags:InteractiveFlag.all,
-                  onTap: (_, __) {
-                    setState(() {
-                      showPopup = false;
-                      popupEntry = null;
-                    });
-                  },
                 ),
-                nonRotatedChildren: const [
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text('© OpenStreetMap contributors', style: TextStyle(color: Colors.grey)),
-                  )
-                ],
-                children: [
-                  TileLayer(
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    tileBuilder: (context, child, tile) {
-                      var isDark = (Theme.of(context).brightness == Brightness.dark);
-                      return isDark ? ColorFiltered(
-                        colorFilter: const ColorFilter.matrix([
-                          -1, 0, 0, 0, 255,
-                          0, -1, 0, 0, 255,
-                          0, 0, -1, 0, 255,
-                          0, 0, 0, 1, 0,
-                        ]),
-                        child: child,
-                      ) : child;
-                    },
-                    urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  // The markers for the historic locaitons
-                  MarkerLayer(
-                    markers: locationHistory.map((entry) => Marker(
-                      point: entry.a,
-                      builder: (ctx) => GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            showPopup = true;
-                            popupEntry = entry;
-                          });
-                        },
-                        child: Icon(
-                          Icons.circle,
-                          size: 15,
-                          color: entry == popupEntry
-                            ? Colors.green
-                            : Color.lerp(Colors.red, Colors.blue, now.difference(entry.b).inSeconds / (numberOfDays * 24 * 60 * 60))
-                        ),
-                      ),
-                    )).toList(),
-                  ),
-                  // Displays the tooltip if active
-                  MarkerLayer(
-                    markers: [
-                      if (showPopup) LocationPopup(
-                        location: popupEntry!.a,
-                        time: popupEntry!.b,
-                      ),
-                    ],
-                  ),
-                ],
+                styleString: Theme.of(context).brightness == Brightness.dark ? MapboxStyles.DARK : MapboxStyles.LIGHT,
               ),
             ),
             Flexible(
@@ -142,6 +124,7 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
                 onChanged: (double newValue) {
                   setState(() {
                     numberOfDays = newValue;
+                    _updateMarkers();
                   });
                 },
               ),

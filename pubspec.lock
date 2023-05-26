@@ -182,14 +182,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
-  flutter_map:
-    dependency: "direct main"
-    description:
-      name: flutter_map
-      sha256: "52c65a977daae42f9aae6748418dd1535eaf27186e9bac9bf431843082bc75a3"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -385,7 +377,7 @@ packages:
     source: hosted
     version: "4.0.17"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
@@ -408,14 +400,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
-  latlong2:
-    dependency: transitive
-    description:
-      name: latlong2
-      sha256: "408993a0e3f46e79ce1f129e4cb0386eef6d48dfa6394939ecacfbd7049154ec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.8.1"
   lints:
     dependency: transitive
     description:
@@ -424,14 +408,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  lists:
-    dependency: transitive
-    description:
-      name: lists
-      sha256: "4ca5c19ae4350de036a7e996cdd1ee39c93ac0a2b840f4915459b7d0a7d4ab27"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   logging:
     dependency: transitive
     description:
@@ -440,6 +416,41 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  mapbox_gl:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: fa824ce167da3554e580ea92b92c5aa992b1fd07
+      url: "https://github.com/flutter-mapbox-gl/maps.git"
+    source: git
+    version: "0.16.0"
+  mapbox_gl_dart:
+    dependency: transitive
+    description:
+      name: mapbox_gl_dart
+      sha256: de6d03718e5eb05c9eb1ddaae7f0383b28acb5afa16405e1deed7ff04dd34f3d
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  mapbox_gl_platform_interface:
+    dependency: transitive
+    description:
+      path: mapbox_gl_platform_interface
+      ref: HEAD
+      resolved-ref: fa824ce167da3554e580ea92b92c5aa992b1fd07
+      url: "https://github.com/tobrun/flutter-mapbox-gl.git"
+    source: git
+    version: "0.16.0"
+  mapbox_gl_web:
+    dependency: transitive
+    description:
+      path: mapbox_gl_web
+      ref: HEAD
+      resolved-ref: fa824ce167da3554e580ea92b92c5aa992b1fd07
+      url: "https://github.com/tobrun/flutter-mapbox-gl.git"
+    source: git
+    version: "0.16.0"
   maps_launcher:
     dependency: "direct main"
     description:
@@ -472,14 +483,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-  mgrs_dart:
-    dependency: transitive
-    description:
-      name: mgrs_dart
-      sha256: fb89ae62f05fa0bb90f70c31fc870bcbcfd516c843fb554452ab3396f78586f7
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   mime:
     dependency: transitive
     description:
@@ -592,14 +595,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.7.3"
-  polylabel:
-    dependency: transitive
-    description:
-      name: polylabel
-      sha256: "41b9099afb2aa6c1730bdd8a0fab1400d287694ec7615dd8516935fa3144214b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   pool:
     dependency: transitive
     description:
@@ -616,14 +611,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
-  proj4dart:
-    dependency: transitive
-    description:
-      name: proj4dart
-      sha256: c8a659ac9b6864aa47c171e78d41bbe6f5e1d7bd790a5814249e6b68bc44324e
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   provider:
     dependency: "direct main"
     description:
@@ -821,14 +808,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
-  unicode:
-    dependency: transitive
-    description:
-      name: unicode
-      sha256: "0f69e46593d65245774d4f17125c6084d2c20b4e473a983f6e21b7d7762218f1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.1"
   url_launcher:
     dependency: "direct main"
     description:
@@ -925,14 +904,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.4"
-  wkt_parser:
-    dependency: transitive
-    description:
-      name: wkt_parser
-      sha256: "8a555fc60de3116c00aad67891bcab20f81a958e4219cc106e3c037aa3937f13"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   xdg_directories:
     dependency: transitive
     description:

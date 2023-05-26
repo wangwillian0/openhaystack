@@ -1,12 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/plugin_api.dart';
 import 'package:provider/provider.dart';
 import 'package:openhaystack_mobile/accessory/accessory_list.dart';
 import 'package:openhaystack_mobile/accessory/accessory_registry.dart';
 import 'package:openhaystack_mobile/location/location_model.dart';
 import 'package:openhaystack_mobile/map/map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 class AccessoryMapListVertical extends StatefulWidget {
   final AsyncCallback loadLocationUpdates;
@@ -22,11 +21,16 @@ class AccessoryMapListVertical extends StatefulWidget {
 }
 
 class _AccessoryMapListVerticalState extends State<AccessoryMapListVertical> {
-  final MapController _mapController = MapController();
+  MapboxMapController? _mapController;
 
   void _centerPoint(LatLng point) {
-    _mapController.fitBounds(
-      LatLngBounds(point, point),
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: point,
+          zoom: 15.0,
+        ),
+      )
     );
   }
   
@@ -39,7 +43,9 @@ class _AccessoryMapListVerticalState extends State<AccessoryMapListVertical> {
             Flexible(
               fit: FlexFit.tight,
               child: AccessoryMap(
-                mapController: _mapController,
+                onMapCreatedCallback: (controller) {
+                  _mapController = controller;
+                },
               ),
             ),
             Flexible(
