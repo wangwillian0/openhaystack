@@ -87,20 +87,6 @@ class _AccessoryMapState extends State<AccessoryMap> {
         }
         
         onStyleLoaded() {
-          // void  locationModelListener () {
-          //   locationModel.removeListener(locationModelListener);
-          //   _mapController!.addCircle(
-          //     CircleOptions(
-          //       geometry: locationModel.here!,
-          //       circleRadius: 8,
-          //       circleColor: "#007AFF",
-          //       circleStrokeColor: "#FFFFFF",
-          //       circleStrokeWidth: 2,
-          //     ),
-          //   );
-          // }
-          // locationModel.addListener(locationModelListener);
-
           _mapController!.addCircles(
             accessories
               .where((accessory) => accessory.lastLocation != null)
@@ -132,6 +118,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
         }
 
         return MapboxMap(
+	        myLocationEnabled: true,
           accessToken: const String.fromEnvironment("MAP_SDK_PUBLIC_KEY"),
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onStyleLoaded,
