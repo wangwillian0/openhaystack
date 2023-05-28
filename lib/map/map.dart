@@ -74,7 +74,6 @@ class _AccessoryMapState extends State<AccessoryMap> {
         var accessories = accessoryRegistry.accessories;
         if (!accessoryInitialized && accessoryRegistry.initialLoadFinished) {
           fitToContent(accessories, locationModel.here);
-
           accessoryInitialized = true;
         }
         
@@ -86,8 +85,11 @@ class _AccessoryMapState extends State<AccessoryMap> {
           }
         }
         
-        onStyleLoaded() {
-          _mapController!.addCircles(
+        updateMarkers(MapboxMapController controller) {
+          controller.removeCircles(controller.circles);
+          controller.removeSymbols(controller.symbols);
+
+          controller.addCircles(
             accessories
               .where((accessory) => accessory.lastLocation != null)
               .map((accessory) => CircleOptions(
@@ -99,7 +101,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
               ))
               .toList(),
           );
-          _mapController!.addSymbols(
+          controller.addSymbols(
             accessories
               .where((accessory) => accessory.lastLocation != null)
               .map((accessory) => SymbolOptions(
@@ -114,14 +116,17 @@ class _AccessoryMapState extends State<AccessoryMap> {
               ))
               .toList(),
           );
-          
+        }
+
+        if (_mapController != null) {
+          updateMarkers(_mapController!);
         }
 
         return MapboxMap(
 	        myLocationEnabled: true,
           accessToken: const String.fromEnvironment("MAP_SDK_PUBLIC_KEY"),
           onMapCreated: onMapCreated,
-          onStyleLoadedCallback: onStyleLoaded,
+          onStyleLoadedCallback: () => updateMarkers(_mapController!),
           initialCameraPosition: CameraPosition(
             target: locationModel.here ?? const LatLng(-23.559389, -46.731839),
             zoom: 13.0,
