@@ -34,7 +34,7 @@ class Accessory {
   /// The display name of the accessory.
   String name;
   /// The display icon of the accessory.
-  String _icon;
+  String iconString;
   /// The display color of the accessory.
   Color color;
 
@@ -74,7 +74,7 @@ class Accessory {
     this.lastDerivationTimestamp,
     this.updateInterval,
     this.oldestRelevantSymmetricKey,
-  }): _icon = icon, _lastLocation = lastLocation, super() {
+  }): iconString = icon, _lastLocation = lastLocation, super() {
     _init();
   }
 
@@ -92,7 +92,7 @@ class Accessory {
       name: name,
       hashedPublicKey: hashedPublicKey,
       color: color,
-      icon: _icon,
+      icon: iconString,
       isActive: isActive,
       isDeployed: isDeployed,
       lastLocation: lastLocation,
@@ -111,7 +111,7 @@ class Accessory {
     name = newAccessory.name;
     hashedPublicKey = newAccessory.hashedPublicKey;
     color = newAccessory.color;
-    _icon = newAccessory._icon;
+    iconString = newAccessory.iconString;
     isActive = newAccessory.isActive;
     isDeployed = newAccessory.isDeployed;
     lastLocation = newAccessory.lastLocation;
@@ -132,18 +132,18 @@ class Accessory {
 
   /// The display icon of the accessory.
   IconData get icon {
-    IconData? icon = AccessoryIconModel.mapIcon(_icon);
+    IconData? icon = AccessoryIconModel.mapIcon(iconString);
     return icon ?? defaultIcon;
   }
 
   /// The cupertino icon name.
   String get rawIcon {
-    return _icon;
+    return iconString;
   }
 
   /// The display icon of the accessory.
   setIcon (String icon) {
-    _icon = icon;
+    iconString = icon;
   }
 
   /// Creates an accessory from deserialized JSON data.
@@ -165,7 +165,7 @@ class Accessory {
           ? LatLng(json['latitude'].toDouble(), json['longitude'].toDouble()) : null,
         isActive = json['isActive'],
         isDeployed = json['isDeployed'],
-        _icon = json['icon'],
+        iconString = json['icon'],
         color = Color(int.parse(json['color'], radix: 16)),
         usesDerivation = json['usesDerivation'] ?? false,
         symmetricKey = json['symmetricKey'],
@@ -193,7 +193,7 @@ class Accessory {
     'longitude': _lastLocation?.longitude,
     'isActive': isActive,
     'isDeployed': isDeployed,
-    'icon': _icon,
+    'icon': iconString,
     'color': color.toString().split('(0x')[1].split(')')[0],
     'usesDerivation': usesDerivation,
     'symmetricKey': symmetricKey,
