@@ -27,6 +27,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
   void Function()? cancelLocationUpdates;
   void Function()? cancelAccessoryUpdates;
   bool accessoryInitialized = false;
+  bool mapStyleLoaded = false;
 
   @override
   void initState() {
@@ -85,11 +86,13 @@ class _AccessoryMapState extends State<AccessoryMap> {
   }
 
   updateMarkers(MapboxMapController controller, UnmodifiableListView<Accessory> accessories) async {
+    mapStyleLoaded = true;
     controller.removeCircles(controller.circles);
     controller.removeSymbols(controller.symbols);
 
     Set<String> iconStrings = accessories.map((accessory) => accessory.iconString).toSet();
     for (String iconString in iconStrings) {
+      // to convert from svg to RGBA png use `convert -background "rgba(0,0,0,0)" $f png32:${f%.*}.png`
       await addImageFromAsset(controller, iconString, "assets/accessory_icons/$iconString.png");
     }
 
@@ -111,7 +114,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
         .map((accessory) => SymbolOptions(
           geometry: accessory.lastLocation!,
           iconImage: accessory.iconString,
-          iconSize: 1.0,
+          iconSize: 0.425 * MediaQuery.of(context).devicePixelRatio,
           textField: accessory.name,
           textColor: "#000000",
           textOffset: const Offset(0, 1.5),
@@ -132,7 +135,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
           accessoryInitialized = true;
         }     
         
-        if (_mapController != null) {
+        if (mapStyleLoaded) {
           updateMarkers(_mapController!, accessories);
         }
 
