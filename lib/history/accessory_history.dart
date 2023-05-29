@@ -80,6 +80,9 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
   }
 
   void _onCircleTapped(Circle circle) {
+    final originalCircleColor = circle.options.circleColor;
+    _mapController!.updateCircle(circle, CircleOptions(circleColor: Colors.green.toHexStringRGB()));
+
     final snackBar = SnackBar(
         content: Text(
           '${circle.data!['time'].toLocal().toString().substring(0, 19)}\n'
@@ -90,7 +93,9 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
         ),
         backgroundColor: Theme.of(context).primaryColor);
     ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar).closed.then((_) {
+      _mapController!.updateCircle(circle, CircleOptions(circleColor: originalCircleColor));
+    });
   }
 
   @override
