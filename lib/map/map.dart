@@ -53,7 +53,7 @@ class _AccessoryMapState extends State<AccessoryMap> {
       if (hereLocation != null) hereLocation,
     ].toList();
     
-    _mapController?.animateCamera(
+    _mapController?.moveCamera(
       CameraUpdate.newLatLngBounds(
         LatLngBounds(
           southwest: LatLng(

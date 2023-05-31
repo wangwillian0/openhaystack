@@ -58,7 +58,7 @@ class _AccessoryHistoryState extends State<AccessoryHistory> {
   }
 
   void _onStyleLoaded() {    
-    _mapController?.animateCamera(
+    _mapController?.moveCamera(
       CameraUpdate.newLatLngBounds(
         LatLngBounds(
           southwest: LatLng(

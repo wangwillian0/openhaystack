@@ -24,7 +24,7 @@ class _AccessoryMapListVerticalState extends State<AccessoryMapListVertical> {
   MapboxMapController? _mapController;
 
   void _centerPoint(LatLng point) {
-    _mapController?.animateCamera(
+    _mapController?.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: point,
