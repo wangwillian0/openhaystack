@@ -30,7 +30,7 @@ class KeyManagement extends StatelessWidget {
           child: ListView(
             children: accessories.map((accessory) {
               String lastSeen = accessory.datePublished != null
-                ? DateFormat('dd.MM.yyyy kk:mm').format(accessory.datePublished!)
+                ? DateFormat('dd.MM.yyyy HH:mm').format(accessory.datePublished!)
                 : 'Unknown';
               return ListTile(
                 onTap: () {
