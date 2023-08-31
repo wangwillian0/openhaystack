@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:isolate';
 import 'dart:typed_data';
-import 'dart:io' as IO;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -38,18 +37,8 @@ class FindMyController {
     FindMyKeyPair keyPair = args[0];
     String seemooEndpoint = args[1];
     final jsonReports = await ReportsFetcher.fetchLocationReports(keyPair.getHashedAdvertisementKey(), seemooEndpoint);
-    final numChunks = kIsWeb ? 1 : IO.Platform.numberOfProcessors+1;
-    final chunkSize = (jsonReports.length / numChunks).ceil();
-    final chunks = [
-      for (var i = 0; i < jsonReports.length; i += chunkSize)
-        jsonReports.sublist(i, i + chunkSize < jsonReports.length ? i + chunkSize : jsonReports.length),
-    ];
-    final decryptedLocations = await Future.wait(chunks.map((jsonChunk) async {
-      final decryptedChunk = await compute(_decryptChunk, [jsonChunk, keyPair, keyPair.privateKeyBase64!]);
-      return decryptedChunk;
-    }));
-    final results = decryptedLocations.expand((element) => element).toList();
-    return results;
+    final decryptedLocations = await _decryptReports(jsonReports, keyPair, keyPair.privateKeyBase64!);
+    return decryptedLocations;
   }
 
   /// Loads the private key from the local cache or secure storage and adds it
@@ -77,12 +66,8 @@ class FindMyController {
 
   /// Decrypts the encrypted reports with the given list of [FindMyKeyPair] and private key.
   /// Returns the list of decrypted reports as a list of [FindMyLocationReport].
-  static Future<List<FindMyLocationReport>> _decryptChunk(List<dynamic> args) async {
-    List<dynamic> jsonChunk = args[0];
-    FindMyKeyPair keyPair = args[1];
-    String privateKey = args[2];
-
-    final reportChunk = jsonChunk.map((jsonReport) {
+  static Future<List<FindMyLocationReport>> _decryptReports(List<dynamic> jsonRerportList, FindMyKeyPair keyPair, String privateKey) async {
+    final reportChunk = jsonRerportList.map((jsonReport) {
       assert (jsonReport["id"]! == keyPair.getHashedAdvertisementKey(),
       "Returned FindMyReport hashed key != requested hashed key");
 
@@ -98,7 +83,7 @@ class FindMyController {
       return report;
     }).toList();
 
-    final decryptedReports = await DecryptReports.decryptReportChunk(reportChunk, base64Decode(privateKey));
+    final decryptedReports = await DecryptReports.decryptReports(reportChunk, base64Decode(privateKey));
 
     return decryptedReports;
   }

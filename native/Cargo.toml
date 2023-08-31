@@ -10,6 +10,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 flutter_rust_bridge = "^1.77.0"
 p224 = "^0.13.2"
 getrandom = "^0.2.9"
+rayon = "1.7.0"
 
 [features]
 default = ["p224/ecdh", "getrandom/js"]

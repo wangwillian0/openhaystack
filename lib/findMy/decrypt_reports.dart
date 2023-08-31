@@ -12,34 +12,34 @@ import 'package:openhaystack_mobile/ffi/ffi.dart'
 
 class DecryptReports {
   /// Decrypts a given [FindMyReport] with the given private key.
-  static Future<List<FindMyLocationReport>> decryptReportChunk(List<FindMyReport> reportChunk, Uint8List privateKeyBytes) async {
+  static Future<List<FindMyLocationReport>> decryptReports(List<FindMyReport> reports, Uint8List privateKeyBytes) async {
     final curveDomainParam = ECCurve_secp224r1();
 
-    final ephemeralKeyChunk = reportChunk.map((report) {
+    final ephemeralKeys = reports.map((report) {
       final payloadData = report.payload;
       final ephemeralKeyBytes = payloadData.sublist(5, 62);
       return ephemeralKeyBytes;
     }).toList();
 
-    late final List<Uint8List> sharedKeyChunk;
+    late final List<Uint8List> sharedKeys;
 
     try {
       debugPrint("Trying native ECDH");
-      final ephemeralKeyBlob = Uint8List.fromList(ephemeralKeyChunk.expand((element) => element).toList()); 
+      final ephemeralKeyBlob = Uint8List.fromList(ephemeralKeys.expand((element) => element).toList()); 
       final sharedKeyBlob = await api.ecdh(publicKeyBlob: ephemeralKeyBlob, privateKey: privateKeyBytes);
-      final chunkSize = (sharedKeyBlob.length / ephemeralKeyChunk.length).ceil();
-      sharedKeyChunk = [
-        for (var i = 0; i < sharedKeyBlob.length; i += chunkSize)
-          sharedKeyBlob.sublist(i, i + chunkSize < sharedKeyBlob.length ? i + chunkSize : sharedKeyBlob.length),
+      final keySize = (sharedKeyBlob.length / ephemeralKeys.length).ceil();
+      sharedKeys = [
+        for (var i = 0; i < sharedKeyBlob.length; i += keySize)
+          sharedKeyBlob.sublist(i, i + keySize < sharedKeyBlob.length ? i + keySize : sharedKeyBlob.length),
       ];
     }
     catch (e) {
       debugPrint("Native ECDH failed: $e");
-      debugPrint("Falling back to pure Dart ECDH!");
+      debugPrint("Falling back to pure Dart ECDH on single thread!");
       final privateKey = ECPrivateKey(
         pc_utils.decodeBigIntWithSign(1, privateKeyBytes),
         curveDomainParam);
-      sharedKeyChunk = ephemeralKeyChunk.map((ephemeralKey) {
+      sharedKeys = ephemeralKeys.map((ephemeralKey) {
         final decodePoint = curveDomainParam.curve.decodePoint(ephemeralKey);
         final ephemeralPublicKey = ECPublicKey(decodePoint, curveDomainParam);
 
@@ -48,8 +48,8 @@ class DecryptReports {
       }).toList();
     }
 
-    final decryptedLocationChunk = reportChunk.mapIndexed((index, report) {
-      final derivedKey = _kdf(sharedKeyChunk[index], ephemeralKeyChunk[index]);
+    final decryptedLocations = reports.mapIndexed((index, report) {
+      final derivedKey = _kdf(sharedKeys[index], ephemeralKeys[index]);
       final payloadData = report.payload;
       _decodeTimeAndConfidence(payloadData, report);
       final encData = payloadData.sublist(62, 72);
@@ -59,7 +59,7 @@ class DecryptReports {
       return locationReport;
     }).toList();
     
-    return decryptedLocationChunk;
+    return decryptedLocations;
   }
 
   /// Decodes the unencrypted timestamp and confidence
