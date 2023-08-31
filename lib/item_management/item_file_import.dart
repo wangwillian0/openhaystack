@@ -139,7 +139,7 @@ class _ItemFileImportState extends State<ItemFileImport> {
       color = Color.fromRGBO(red, green, blue, opacity);
     }
 
-    String icon = 'mappin';
+    String icon = 'push_pin';
     if (AccessoryIconModel.icons.contains(accessoryDTO.icon)) {
       icon = accessoryDTO.icon;
     }

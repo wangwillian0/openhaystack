@@ -67,7 +67,7 @@ class Accessory {
     this.isActive = false,
     this.isDeployed = false,
     LatLng? lastLocation,
-    String icon = 'mappin',
+    String icon = 'push_pin',
     this.color = Colors.grey,
     this.usesDerivation = false,
     this.symmetricKey,
