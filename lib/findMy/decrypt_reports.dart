@@ -51,6 +51,7 @@ class DecryptReports {
     final decryptedLocationChunk = reportChunk.mapIndexed((index, report) {
       final derivedKey = _kdf(sharedKeyChunk[index], ephemeralKeyChunk[index]);
       final payloadData = report.payload;
+      _decodeTimeAndConfidence(payloadData, report);
       final encData = payloadData.sublist(62, 72);
       final tag = payloadData.sublist(72, payloadData.length);
       final decryptedPayload = _decryptPayload(encData, derivedKey, tag);

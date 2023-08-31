@@ -111,6 +111,8 @@ class AccessoryRegistry extends ChangeNotifier {
         ))
         .toList();
 
+      reports.sort((a, b) => (b.timestamp ?? DateTime(0)).compareTo(a.timestamp ?? DateTime(0)));
+
       if (reports.isNotEmpty) {
         var lastReport = reports.first;
         accessory.lastLocation = LatLng(lastReport.latitude, lastReport.longitude);
