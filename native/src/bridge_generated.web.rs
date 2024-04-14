@@ -19,6 +19,14 @@ impl Wire2Api<Vec<u8>> for Box<[u8]> {
 }
 // Section: impl Wire2Api for JsValue
 
+impl<T> Wire2Api<Option<T>> for JsValue
+where
+    JsValue: Wire2Api<T>,
+{
+    fn wire2api(self) -> Option<T> {
+        (!self.is_null() && !self.is_undefined()).then(|| self.wire2api())
+    }
+}
 impl Wire2Api<u8> for JsValue {
     fn wire2api(self) -> u8 {
         self.unchecked_into_f64() as _

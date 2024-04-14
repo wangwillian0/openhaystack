@@ -33,10 +33,10 @@ dependencies:
   # UI
   flutter_colorpicker: ^1.0.3
   flutter_launcher_icons: ^0.13.0
-  flutter_slidable: ^3.0.0
+  flutter_slidable: ^3.1.0
 
   # Networking
-  http: ^0.13.4
+  http: ^1.2.1
 
   # Cryptography
   # latest version of pointy castle for crypto functions
@@ -50,23 +50,22 @@ dependencies:
     git:
       url: https://github.com/flutter-mapbox-gl/maps.git
       ref: master
-  intl: ^0.18.1
-  geolocator: ^8.2.1
-  geocoding: ^2.0.1
+  intl: ^0.19.0
+  geolocator: ^11.0.0
+  geocoding: ^3.0.0
 
   # Storage
   shared_preferences: ^2.0.9
-  flutter_secure_storage: ^8.0.0
-  file_picker: ^5.2.7
+  flutter_secure_storage: ^9.0.0
+  file_picker: ^8.0.0+1
 
   # Sharing
-  share_plus: ^7.0.0
+  share_plus: ^8.0.0
   url_launcher: ^6.0.17
   path_provider: ^2.0.8
   maps_launcher: ^2.0.1
-  ffi: ^2.0.1
-  flutter_rust_bridge: ^1.72.2
-  share_plus_web: ^3.1.0
+  ffi: ^2.1.2
+  flutter_rust_bridge: ^1.78.6
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -81,8 +80,8 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.1
-  ffigen: ^8.0.2
+  flutter_lints: ^3.0.2
+  ffigen: ^11.0.0
 
 # Configuration for flutter_launcher_icons
 flutter_icons:
