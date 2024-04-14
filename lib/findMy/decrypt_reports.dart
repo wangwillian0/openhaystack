@@ -17,7 +17,7 @@ class DecryptReports {
 
     final ephemeralKeys = reports.map((report) {
       final payloadData = report.payload;
-      final ephemeralKeyBytes = payloadData.sublist(5, 62);
+      final ephemeralKeyBytes = payloadData.sublist(payloadData.length - 16 - 10 - 57, payloadData.length - 16 - 10);
       return ephemeralKeyBytes;
     }).toList();
 
@@ -52,8 +52,8 @@ class DecryptReports {
       final derivedKey = _kdf(sharedKeys[index], ephemeralKeys[index]);
       final payloadData = report.payload;
       _decodeTimeAndConfidence(payloadData, report);
-      final encData = payloadData.sublist(62, 72);
-      final tag = payloadData.sublist(72, payloadData.length);
+      final encData = payloadData.sublist(payloadData.length - 16 - 10, payloadData.length - 16);
+      final tag = payloadData.sublist(payloadData.length - 16, payloadData.length);
       final decryptedPayload = _decryptPayload(encData, derivedKey, tag);
       final locationReport = _decodePayload(decryptedPayload, report);
       return locationReport;

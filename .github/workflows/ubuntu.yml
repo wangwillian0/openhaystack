@@ -11,6 +11,9 @@ jobs:
         distribution: 'zulu'
         java-version: '11'
     - uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+        flutter-version: 3.16.9
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
