@@ -6,59 +6,58 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-java@v2
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-    - uses: subosito/flutter-action@v2
-      with:
-        channel: stable
-        flutter-version: 3.19.5
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-    - uses: actions/checkout@v3
-    - name: Setup Rust tools for Android build
-      run: |
-        rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
-        cargo install cargo-ndk
-    - name: Build for Android
-      env:
-        SDK_REGISTRY_TOKEN: ${{ secrets.MAP_SDK_SECRET_KEY }}
-        MAP_SDK_PUBLIC_KEY: ${{ secrets.MAP_SDK_PUBLIC_KEY }}
-      run: |
-        flutter pub get
-        flutter build apk --release --dart-define=MAP_SDK_PUBLIC_KEY="$MAP_SDK_PUBLIC_KEY"
-    - name: Upload Android Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: android
-        path: ./build/app/outputs/flutter-apk/app-release.apk
-    - name: Setup Rust tools for Web build
-      run: |
-        rustup override set nightly
-        rustup component add rust-src
-        rustup target add wasm32-unknown-unknown
-        cargo install wasm-pack
-    - name: Build for Web
-      env:
-        RUSTUP_TOOLCHAIN: nightly
-        RUSTFLAGS: -C target-feature=+atomics,+bulk-memory,+mutable-globals
-        SDK_REGISTRY_TOKEN: ${{ secrets.MAP_SDK_SECRET_KEY }}
-        MAP_SDK_PUBLIC_KEY: ${{ secrets.MAP_SDK_PUBLIC_KEY }}
-      run: |
-        wasm-pack build -t no-modules -d ./../web/pkg --no-typescript --out-name native native -- -Z build-std=std,panic_abort
-        flutter build web --release --web-renderer html --dart-define=MAP_SDK_PUBLIC_KEY="$MAP_SDK_PUBLIC_KEY"
-    - name: Upload Web Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: web
-        path: ./build/web
-    - name: Publish to Cloudflare Pages
-      uses: cloudflare/pages-action@1
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        projectName: openhaystack
-        directory: ./build/web
-
+      - uses: actions/setup-java@v2
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.19.5
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+      - uses: actions/checkout@v4
+      - name: Setup Rust tools for Android build
+        run: |
+          rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
+          cargo install cargo-ndk
+      - name: Build for Android
+        env:
+          SDK_REGISTRY_TOKEN: ${{ secrets.MAP_SDK_SECRET_KEY }}
+          MAP_SDK_PUBLIC_KEY: ${{ secrets.MAP_SDK_PUBLIC_KEY }}
+        run: |
+          flutter pub get
+          flutter build apk --release --dart-define=MAP_SDK_PUBLIC_KEY="$MAP_SDK_PUBLIC_KEY"
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: ./build/app/outputs/flutter-apk/app-release.apk
+      - name: Setup Rust tools for Web build
+        run: |
+          rustup override set nightly
+          rustup component add rust-src
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-pack
+      - name: Build for Web
+        env:
+          RUSTUP_TOOLCHAIN: nightly
+          RUSTFLAGS: -C target-feature=+atomics,+bulk-memory,+mutable-globals
+          SDK_REGISTRY_TOKEN: ${{ secrets.MAP_SDK_SECRET_KEY }}
+          MAP_SDK_PUBLIC_KEY: ${{ secrets.MAP_SDK_PUBLIC_KEY }}
+        run: |
+          wasm-pack build -t no-modules -d ./../web/pkg --no-typescript --out-name native native -- -Z build-std=std,panic_abort
+          flutter build web --release --web-renderer html --dart-define=MAP_SDK_PUBLIC_KEY="$MAP_SDK_PUBLIC_KEY"
+      - name: Upload Web Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: ./build/web
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: openhaystack
+          directory: ./build/web
