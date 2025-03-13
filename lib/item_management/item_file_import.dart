@@ -175,7 +175,7 @@ class _ItemFileImportState extends State<ItemFileImport> {
           children: [
             Text(
               'An error occured.',
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
